@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: eco_user
+      POSTGRES_PASSWORD: eco_pass
+      POSTGRES_DB: eco_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgresql://eco_user:eco_pass@db:5432/eco_db
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+
+  jupyter:
+    image: jupyter/base-notebook:python-3.10.12
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    environment:
+      JUPYTER_TOKEN: "ecotoken"
+    ports:
+      - "8888:8888"
+
+volumes:
+  db_data:
