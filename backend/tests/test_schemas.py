@@ -1,4 +1,4 @@
-from app.schemas import SurveyCreate
+from src.app.schemas import SurveyCreate
 
 
 def test_survey_create_valid():

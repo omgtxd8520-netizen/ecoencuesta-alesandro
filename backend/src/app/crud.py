@@ -1,11 +1,23 @@
-from .db import db
+from .db import get_db
+from bson import ObjectId
+import datetime
 
 async def create_survey(s):
-    query = "INSERT INTO surveys (respondent_name, location, score, notes) VALUES (:respondent_name, :location, :score, :notes) RETURNING id, created_at"
-    values = s.dict()
-    row = await db.fetch_one(query=query, values=values)
-    return {**values, 'id': row['id'], 'created_at': row['created_at']}
+    db = get_db()
+    doc = s.dict()
+    doc['created_at'] = datetime.datetime.utcnow()
+    result = await db.surveys.insert_one(doc)
+    doc['id'] = str(result.inserted_id)
+    return doc
 
-async def get_survey(survey_id: int):
-    query = "SELECT id, respondent_name, location, score, notes, created_at FROM surveys WHERE id = :id"
-    return await db.fetch_one(query=query, values={'id': survey_id})
+async def get_survey(survey_id: str):
+    db = get_db()
+    try:
+        oid = ObjectId(survey_id)
+    except Exception:
+        return None
+    doc = await db.surveys.find_one({'_id': oid})
+    if not doc:
+        return None
+    doc['id'] = str(doc.pop('_id'))
+    return doc

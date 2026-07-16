@@ -1,12 +1,19 @@
 import os
-from databases import Database
+from motor.motor_asyncio import AsyncIOMotorClient
+from urllib.parse import quote_plus
 
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://eco_user:eco_pass@localhost:5432/eco_db')
+MONGO_URL = os.getenv('MONGO_URL', os.getenv('DATABASE_URL', 'mongodb://mongo:27017'))
 
-db = Database(DATABASE_URL)
+# Support simple authless URL or one with credentials
+client = AsyncIOMotorClient(MONGO_URL)
+_db = client.get_default_database() if client.get_default_database() else client['eco_db']
 
 async def connect():
-    await db.connect()
+    # motor client connects lazily; perform a ping to verify
+    await client.admin.command('ping')
 
 async def disconnect():
-    await db.disconnect()
+    client.close()
+
+def get_db():
+    return _db

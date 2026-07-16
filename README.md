@@ -31,13 +31,13 @@ Rápido inicio (desarrollo)
 
    docker-compose up --build
 
-4. Inicializar esquema (una vez):
+4. Inicializar esquema y poblar datos (una vez):
 
-   docker-compose run --rm backend python -m backend.src.app.init_db
+   docker-compose run --rm migrator
 
-5. Poblar con datos de ejemplo:
+5. Comprobar datos:
 
-   docker-compose run --rm backend python -m backend.scripts.seed_db
+   docker-compose run --rm backend python src/app/check_db.py
 
 6. Abrir:
 - API: http://localhost:8000
